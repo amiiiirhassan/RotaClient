@@ -1,0 +1,3 @@
+rootProject.name = 'RotaClient'
+
+include ':app'
