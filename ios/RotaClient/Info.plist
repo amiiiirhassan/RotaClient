@@ -70,6 +70,9 @@
 		<string>Octicons.ttf</string>
 		<string>SimpleLineIcons.ttf</string>
 		<string>Zocial.ttf</string>
+		<string>IRANSansMobile.ttf</string>
+		<string>IRANSansMobileLight.ttf</string>
+		<string>IRANSansMobileMedium.ttf</string>
 	</array>
 </dict>
 </plist>

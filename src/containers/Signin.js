@@ -2,18 +2,16 @@ import React, {Component} from 'react';
 import { Platform, Text, View,ImageBackground,Image,TextInput} from 'react-native';
 import { Button } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
-import { signin } from './Style';
-
+import { signin } from '../components/Style';
+import {ApiUrl} from '../consts/index';
+import { connect } from 'react-redux';
+import {setCurrentUserPhoneNumber} from '../actions/index';
 // import Toast from 'react-native-easy-toast';
-// import { Actions } from 'react-native-router-flux';
-// import { connect } from 'react-redux';
-// import { bindActionCreators } from 'redux';
-// import { userAuthorized } from '../actions';
 
 class Signin extends React.Component {
   constructor(props) {
       super(props);
-      this.state = { text: '', disableBtn: false };
+      this.state = { phoneNumber: '', disableBtn: false };
   }
 
   componentDidMount() {
@@ -24,48 +22,49 @@ class Signin extends React.Component {
 
   }
 
-  doLogin() {
-
-{
-  /*
-  var self = this;
+  doLogin(navigate) {
+    this.props.dispatch(setCurrentUserPhoneNumber('09379640869'));
+    navigate('VerifySignin');
+    /*
     let regex = new RegExp('^[0][9][1][0-9]{8,8}$');
-    if (this.state.text == "") {
-        self.refs.toast.show('لطفا شماره موبایل را وارد کنید', 2000);
+    if (this.state.phoneNumber == "") {
+        //self.refs.toast.show('لطفا شماره موبایل را وارد کنید', 2000);
+        console.log("milad");
         return;
-    } else if (!this.state.text.match(regex)) {
-        self.refs.toast.show('شماره ی موبایل معتبر نیست', 2000);
-        return;
-    }
-    self.setState({ disableBtn: true });
-    //Actions.verify({mobile:this.state.text});
-    fetch('http://rota.social:443/api/signin?mobile=' + parseInt(this.state.text), {
-        method: 'GET',
+    }  
+    this.setState({ disableBtn: true });
+    console.log(this.state.phoneNumber);
+     return fetch(`${ApiUrl}/signin`, {
+        method: 'POST',
         headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-            'Access-Control-Allow-Origin': '*'
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          phoneNumber: this.state.phoneNumber
+        }),
+      })
+      .then((response) => response.json())
+      .then((responseJson) => {
+        if(responseJson.status === 200) {
+          this.props.dispatch(setCurrentUserPhoneNumber(this.state.phoneNumber));
+          navigate('VerifySignin');
         }
-    }).then(response => response.json())
-        .then(responseJson => {
-            self.setState({ disableBtn: false });
-            if (responseJson.status) {
-                Actions.verify({ mobile: this.state.text });
-            } else {
-                self.refs.toast.show('شماره همراه را اشتباه وارد کردید', 5000);
-            }
-        }).catch((error) => {
-            self.setState({ disableBtn: false });
-            self.refs.toast.show(error, 5000);
-        });
-*/
-}
-
+        return responseJson;
+      })
+      .catch((err) => {
+          console.log(err)
+          return err
+      })
+      
+      */
 
   }
 
 
   render(){
+    const {navigate} = this.props.navigation;
+
     return(
       <KeyboardAwareScrollView
       resetScrollToCoords={{ x: 0, y: 0 }}
@@ -104,8 +103,8 @@ class Signin extends React.Component {
                           placeholder=""
                           keyboardType="number-pad"
                           style={[signin.formInput, signin.fontCustom]}
-                          onChangeText={(text) => this.setState({ text })}
-                          value={this.state.text}
+                          onChangeText={(phoneNumber) => this.setState({ phoneNumber })}
+                          value={this.state.phoneNumber}
                       />
                   </View>
                   <View style={signin.formLabelContainer}>
@@ -120,7 +119,7 @@ class Signin extends React.Component {
                 disabled={this.state.disableBtn}
                 textStyle={[signin.loginButtonText, signin.fontCustom]}
                 title={`ورود`}
-                onPress={() => { this.doLogin() }}
+                onPress={() => { this.doLogin(navigate) }}
             />
 
 
@@ -131,6 +130,13 @@ class Signin extends React.Component {
   }
 }
 
+const mapStateToProps = (state) => (
+  state
+)
+mapDispatchToProps = (dispatch) => {
+  return {
+    dispatch: (action) => dispatch(action),
 
-
-export default Signin;
+  }
+}
+export default connect (mapStateToProps,mapDispatchToProps)(Signin);
