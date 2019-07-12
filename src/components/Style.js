@@ -122,6 +122,7 @@ const signin = StyleSheet.create({
 })
 
 const next_component = StyleSheet.create({
+    
    primary: {
      flex: 1,
      height: 70,
@@ -131,10 +132,21 @@ const next_component = StyleSheet.create({
      marginLeft: 20,
      marginRight: 20
    }
+   
  })
 
 
+ const LoadingStyles = StyleSheet.create({
+    container: {
+      flex: 1,
+      justifyContent: 'center'
+    },
+    horizontal: {
+      flexDirection: 'row',
+      justifyContent: 'space-around',
+      padding: 10
+    }
+  })
 
 
-
-export  {signin ,next_component};
+export  {signin ,next_component,LoadingStyles};

@@ -6,7 +6,7 @@ import { signin } from '../components/Style';
 import {ApiUrl} from '../consts/index';
 import { connect } from 'react-redux';
 import {setCurrentUserPhoneNumber} from '../actions/index';
-// import Toast from 'react-native-easy-toast';
+import Toast from 'react-native-easy-toast';
 
 class Signin extends React.Component {
   constructor(props) {
@@ -23,17 +23,17 @@ class Signin extends React.Component {
   }
 
   doLogin(navigate) {
-    this.props.dispatch(setCurrentUserPhoneNumber('09379640869'));
-    navigate('VerifySignin');
-    /*
-    let regex = new RegExp('^[0][9][1][0-9]{8,8}$');
+    
+    let regex = new RegExp('^[0][9][1-9][0-9]{8}');
     if (this.state.phoneNumber == "") {
-        //self.refs.toast.show('لطفا شماره موبایل را وارد کنید', 2000);
-        console.log("milad");
+        this.refs.toast.show('لطفا شماره موبایل را وارد کنید', 2000);
         return;
-    }  
+    } 
+    else if (!this.state.phoneNumber.match(regex)) {
+      this.refs.toast.show('شماره ی موبایل معتبر نیست', 2000);
+      return;
+  } 
     this.setState({ disableBtn: true });
-    console.log(this.state.phoneNumber);
      return fetch(`${ApiUrl}/signin`, {
         method: 'POST',
         headers: {
@@ -46,18 +46,26 @@ class Signin extends React.Component {
       })
       .then((response) => response.json())
       .then((responseJson) => {
+        console.log("responseJson",responseJson);
         if(responseJson.status === 200) {
           this.props.dispatch(setCurrentUserPhoneNumber(this.state.phoneNumber));
           navigate('VerifySignin');
         }
+        else {
+          this.setState({ disableBtn: false });
+          this.refs.toast.show(responseJson.message, 2000);
+
+        }
         return responseJson;
       })
       .catch((err) => {
+          this.setState({ disableBtn: false });
           console.log(err)
+          this.refs.toast.show(err, 2000);
           return err
       })
       
-      */
+      
 
   }
 
@@ -81,9 +89,9 @@ class Signin extends React.Component {
                       <Text style={[signin.loginHeaderText, signin.fontCustom]}>
                           برای ورود شماره خود را وارد کنید
                       </Text>
-                      {/*<Toast ref="toast" style={{ zIndex: 1000 }} positionValue={370} position='top' opacity={0.8}
+                      <Toast ref="toast" style={{ zIndex: 1000 }} positionValue={370} position='top' opacity={0.8}
                           textStyle={{ fontSize: 18, fontFamily: 'IRANSansMobile', color: '#fff' }}
-                      />*/}
+                      />
                       <View style={signin.loginHeaderSeprator}>
 
                       </View>

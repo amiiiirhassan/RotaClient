@@ -10,6 +10,7 @@ import {
     TextInput,
     ImageBackground
 } from 'react-native';
+import {ApiUrl} from '../consts/index';
 
 import { connect } from 'react-redux';
 
@@ -20,8 +21,9 @@ import { AnimatedCircularProgress } from 'react-native-circular-progress';
 import Toast, {DURATION} from 'react-native-easy-toast'
 
 
-import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
 
+import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
+import {SaveToken} from '../js/TokenOparition'
 
 
 //import LinearGradient from 'react-native-linear-gradient';
@@ -40,9 +42,13 @@ class VerifySignin extends React.Component {
        // this.props.onAuthorize();
         this.setTimer();
     }
+    resetTime() {
+        this.setState({time: 59,fill: 0});
+    }
 
     setTimer(){
         var self = this;
+        self.setState({time: 59,fill: 0});
         this.state.timer = window.setInterval( () => {
             var time = self.state.time;
             var fill = self.state.fill;
@@ -73,28 +79,66 @@ class VerifySignin extends React.Component {
         return result;
     }
 
-    sendAgain(mobile){
-        var self = this;
-
-        fetch('http://rota.social:443/api/signin?mobile='+mobile, {
-          method: 'GET',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          }
-        }).then(response => response.json())
-        .then(responseJson => {
-          if(responseJson.status){
-            self.refs.toast.show('کد مجددا ارسال شد', 5000);
-            self.setState({time: 59})
-            self.setTimer();
-          } else {
-            self.refs.toast.show(responseJson.msg, 5000);
-          }
-        })
+    sendAgain(mobileNumber){
+     return fetch(`${ApiUrl}/signin`, {
+        method: 'POST',
+        headers: {
+          Accept: 'application/json',
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          phoneNumber: mobileNumber
+        }),
+      })
+      .then((response) => response.json())
+      .then((responseJson) => {
+        console.log("responseJson",responseJson);
+        if(responseJson.status === 200) {
+          this.setTimer();
+          console.log("the verification code send again");
+        }
+        return responseJson;
+      })
+      .catch((err) => {
+          console.log(err)
+          return err
+      })
     }
 
-    doVerify(mobile){
+    doVerify(mobileNumber,navigate){
+        const code = this.state.txt1+this.state.txt2+this.state.txt3+this.state.txt4+this.state.txt5;
+        return fetch(`${ApiUrl}/signin`, {
+            method: 'POST',
+            headers: {
+              Accept: 'application/json',
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              phoneNumber: mobileNumber,
+              verifyCode: code
+
+            }),
+          })
+          .then((response) => response.json())
+          .then((responseJson) => {
+            console.log(responseJson);
+            if(responseJson.status === 200) {
+                SaveToken(responseJson.token)
+                .then(()=> navigate('Home'))
+                .catch((err) => console.log(err))
+                
+
+            }
+            else {
+                this.refs.toast.show('کد تایید اشتباه است', 2000);
+            }
+            return responseJson;
+          })
+          .catch((err) => {
+              console.log(err)
+              return err
+          })
+        /*
         var self = this;
         self.setState({ disableBtn: true });
 
@@ -130,6 +174,7 @@ class VerifySignin extends React.Component {
             self.setState({ disableBtn: false });
 
         })
+        */
     }
 
     changeInput(text,index){
@@ -137,6 +182,7 @@ class VerifySignin extends React.Component {
     }
 
     render() {
+        const {navigate} = this.props.navigation;
         return (
             <KeyboardAwareScrollView
             resetScrollToCoords={{ x: 0, y: 0 }}
@@ -246,7 +292,7 @@ class VerifySignin extends React.Component {
                             <Button 
                               buttonStyle={styles.loginResendCode}
                               textStyle={[styles.loginResendCodeText, styles.fontCustom]}
-                              onPress={() => this.sendAgain(this.props.mobile)}
+                              onPress={() => this.sendAgain(this.props.phoneNumber)}
                               title="دریافت مجدد"
                             />
                         </View> : 
@@ -255,7 +301,7 @@ class VerifySignin extends React.Component {
                           disabled={this.state.disableBtn}
                           textStyle={[styles.loginButtonText, styles.fontCustom]}
                           title={`ورود`}
-                          onPress={() => this.doVerify(this.props.mobile)}
+                          onPress={() => this.doVerify(this.props.phoneNumber,navigate)}
                          // onPress={() => this.doLogin()}
                         />  
                     }
