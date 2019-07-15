@@ -2,6 +2,7 @@ import React, { Component } from 'react';
 import { AppRegistry, View, Text ,StyleSheet,ActivityIndicator } from 'react-native';
 import {GetToken} from '../js/TokenOparition';
 import {ApiUrl} from '../consts/index';
+const apiUrl = ApiUrl();
 
 class AuthGuard extends React.Component {
     constructor(props) {
@@ -13,7 +14,7 @@ class AuthGuard extends React.Component {
         GetToken()
         .then((_token) => {
         console.log(_token);
-        return fetch(`${ApiUrl}/signin`, {
+        return fetch(`${apiUrl}/signin`, {
             method: 'POST',
             headers: {
             Accept: 'application/json',

@@ -11,6 +11,7 @@ import {
     ImageBackground
 } from 'react-native';
 import {ApiUrl} from '../consts/index';
+const apiUrl = ApiUrl();
 
 import { connect } from 'react-redux';
 
@@ -80,7 +81,7 @@ class VerifySignin extends React.Component {
     }
 
     sendAgain(mobileNumber){
-     return fetch(`${ApiUrl}/signin`, {
+     return fetch(`${apiUrl}/signin`, {
         method: 'POST',
         headers: {
           Accept: 'application/json',
@@ -107,7 +108,7 @@ class VerifySignin extends React.Component {
 
     doVerify(mobileNumber,navigate){
         const code = this.state.txt1+this.state.txt2+this.state.txt3+this.state.txt4+this.state.txt5;
-        return fetch(`${ApiUrl}/signin`, {
+        return fetch(`${apiUrl}/signin`, {
             method: 'POST',
             headers: {
               Accept: 'application/json',

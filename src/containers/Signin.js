@@ -4,6 +4,8 @@ import { Button } from 'react-native-elements';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view';
 import { signin } from '../components/Style';
 import {ApiUrl} from '../consts/index';
+const apiUrl = ApiUrl();
+
 import { connect } from 'react-redux';
 import {setCurrentUserPhoneNumber} from '../actions/index';
 import Toast from 'react-native-easy-toast';
@@ -34,7 +36,7 @@ class Signin extends React.Component {
       return;
   } 
     this.setState({ disableBtn: true });
-     return fetch(`${ApiUrl}/signin`, {
+     return fetch(`${apiUrl}/signin`, {
         method: 'POST',
         headers: {
           Accept: 'application/json',
