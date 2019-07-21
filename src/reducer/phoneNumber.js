@@ -10,4 +10,4 @@ const phoneNumber = (state = "", action) => {
     }
 }
   
-  export default phoneNumber
+export default phoneNumber
