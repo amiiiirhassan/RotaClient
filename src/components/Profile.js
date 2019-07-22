@@ -44,8 +44,9 @@ const {height, width} = Dimensions.get('window');
           { cancelable: true }
         )
     }
-
-    goToEditProfile(navigate){
+    
+    goToEditProfile = (navigate) => {
+        console.log("edit profile");
       navigate('EditProfile')
     }
     backProfile(navigate){
@@ -65,11 +66,20 @@ const {height, width} = Dimensions.get('window');
                     <View style={styles.navbarContainer}>
                         <View style={styles.navbarContainerleft}>
                             <View style={styles.navbarActionTouch}>
-                                <TouchableWithoutFeedback underlayColor={'transparent'} onPress={ () => this.goToEditProfile(navigate) }>
+                            <Button
+                                onPress={() => this.goToEditProfile(navigate)}
+                                title="Press Me"
+                                color="#841584"
+                            />
+                                {
+                                /*
+                                <TouchableHighlight underlayColor={'transparent'} onPress={this.goToEditProfile }>
                                     <Image style={styles.navbarActionIMG}
                                         source={require('../../assets/img/ico_edit.png')}>
                                     </Image>
-                                </TouchableWithoutFeedback>
+                                </TouchableHighlight>
+                                */
+                                }
                                 
                           
                             </View>

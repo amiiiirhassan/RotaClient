@@ -139,43 +139,6 @@ class VerifySignin extends React.Component {
               console.log(err)
               return err
           })
-        /*
-        var self = this;
-        self.setState({ disableBtn: true });
-
-        var code = this.state.txt1+this.state.txt2+this.state.txt3+this.state.txt4+this.state.txt5;
-        fetch('http://rota.social:443/api/verify?mobile='+mobile+'&code='+code, {
-          method: 'GET',
-          headers: {
-            Accept: 'application/json',
-            'Content-Type': 'application/json',
-          }
-        }).then(response => response.json())
-        .then(responseJson => {
-            self.setState({ disableBtn: false });
-
-          if(responseJson.status){
-            
-
-            global.storage.save({
-                key: 'userState',   // Note: Do not use underscore("_") in key!
-                data: JSON.stringify(responseJson.data2[0]),
-                expires: null
-            });
-
-            global.user = responseJson.data2[0];
-
-           // Actions.main({mobile:this.state.text});
-
-
-          } else {
-            self.refs.toast.show('کد تایید اشتباه است!', 5000);
-          }
-        }).catch(()=>{
-            self.setState({ disableBtn: false });
-
-        })
-        */
     }
 
     changeInput(text,index){

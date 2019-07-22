@@ -23,7 +23,7 @@ import Toast, {DURATION} from 'react-native-easy-toast'
 
 //import PersianDatePicker from 'react-native-persian-date-picker';
 //var ImagePicker = require('react-native-image-picker');
-import ImagePicker from 'react-native-image-picker';
+//import ImagePicker from 'react-native-image-picker';
 
 const pickerOption = {
   title: 'Select Avatar',

@@ -15,7 +15,8 @@ class AuthGuard extends React.Component {
         const {navigate} = this.props.navigation;
         GetToken()
         .then((_token) => {
-        console.log(_token);
+          console.log(_token)
+          if(_token) {
         return fetch(`${apiUrl}/signin`, {
             method: 'POST',
             headers: {
@@ -40,12 +41,17 @@ class AuthGuard extends React.Component {
             }
             
             return responseJson;
+          
         })
+
         .catch((err) => {
             console.log(err)
             return err
         })
-
+      }
+      else {
+        navigate('Signin');
+      }
         })
         .catch((err) => console.log(err))
         
