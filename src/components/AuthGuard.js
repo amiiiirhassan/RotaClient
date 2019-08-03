@@ -2,6 +2,8 @@ import React, { Component } from 'react';
 import { AppRegistry, View, Text ,StyleSheet,ActivityIndicator } from 'react-native';
 import {GetToken} from '../js/TokenOparition';
 import {ApiUrl} from '../consts/index';
+import { connect } from 'react-redux';
+import { setCurrentUser } from '../actions/index'
 const apiUrl = ApiUrl();
 
 class AuthGuard extends React.Component {
@@ -13,7 +15,8 @@ class AuthGuard extends React.Component {
         const {navigate} = this.props.navigation;
         GetToken()
         .then((_token) => {
-        console.log(_token);
+          console.log(_token)
+          if(_token) {
         return fetch(`${apiUrl}/signin`, {
             method: 'POST',
             headers: {
@@ -28,6 +31,7 @@ class AuthGuard extends React.Component {
         .then((responseJson) => {
             console.log("responseJson",responseJson);
             if(responseJson.status === 200) {
+               this.props.dispatch(setCurrentUser(responseJson.currentUser))
                navigate('Home');
                this.setState({isLoading:false})
                
@@ -37,12 +41,17 @@ class AuthGuard extends React.Component {
             }
             
             return responseJson;
+          
         })
+
         .catch((err) => {
             console.log(err)
             return err
         })
-
+      }
+      else {
+        navigate('Signin');
+      }
         })
         .catch((err) => console.log(err))
         
@@ -56,7 +65,14 @@ class AuthGuard extends React.Component {
     }
 }
 
-export default AuthGuard
+  mapDispatchToProps = (dispatch) => {
+    return {
+      dispatch: (action) => dispatch(action),
+  
+    }
+  }
+  export default connect (null,mapDispatchToProps)(AuthGuard);
+
 const styles = StyleSheet.create({
     container: {
       flex: 1,
