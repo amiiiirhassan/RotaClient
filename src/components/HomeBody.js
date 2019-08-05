@@ -17,7 +17,8 @@ import { Button } from 'react-native-elements';
 
 
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
-
+import { ApiUrl } from '../consts';
+const apiUrl = ApiUrl();
 const {height, width} = Dimensions.get('window');
 
 class HomeBody extends React.Component {
@@ -50,7 +51,6 @@ class HomeBody extends React.Component {
     }
 
     render() {
-
         //let today = jalaali.toJalaali(new Date());
         const {navigate} = this.props.navigation;    
 
@@ -72,7 +72,7 @@ class HomeBody extends React.Component {
                 <View style={styles.homeProfileCrc}>
                     <View style={styles.homeProfileCrcBG}>
                         <TouchableHighlight  underlayColor={'transparent'} onPress={ () => this.goProfile(navigate) }>
-                            { ( this.props.profileImg == null || this.props.profileImg == 'http://rota.social:443/' ) ?
+                            { ( this.props.currentUser.profileImage == null || this.props.currentUser.profileImage == "" ) ?
                                 <Image style={[styles.homeProfileCrcImage, { width: 100, height: 100 }]}
                                     source={require('../../assets/img/no-image.jpg')} /> :
                                /*     
@@ -85,8 +85,8 @@ class HomeBody extends React.Component {
                                 />
                                 */
                                <Image style={[styles.homeProfileCrcImage, { width: 100, height: 100 }]}
-                               source={{uri: this.props.profileImg.toString()}} />
-
+                               source={{uri: this.props.currentUser.profileImage}} />
+                                
 
                         }
                         </TouchableHighlight>      
@@ -98,7 +98,7 @@ class HomeBody extends React.Component {
                 <View style={styles.homeActionCrc}>
                     <View style={styles.homeActionCrcBG}>
                     <TouchableHighlight underlayColor={'transparent'} onPress={ () => Actions.coupon() }>
-
+                        
                         <Image style={[styles.homeActionCrcImage, { width: 40, height: 40 }]}
                             source={require('../../assets/img/coin-icon-w.png')}                        
                         />

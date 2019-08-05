@@ -9,20 +9,22 @@ import {
     TextInput,
     ImageBackground,
     TouchableHighlight,
+    TouchableOpacity,
     ActivityIndicator,
+    TouchableNativeFeedback,
     TouchableWithoutFeedback,
+    Platform
 
 } from 'react-native';
+import { Button } from 'react-native';
 
-
+import {GetToken} from '../js/TokenOparition';
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-
 import Toast, {DURATION} from 'react-native-easy-toast'
-
-//import PersianDatePicker from 'react-native-persian-date-picker';
-//var ImagePicker = require('react-native-image-picker');
-//import ImagePicker from 'react-native-image-picker';
-
+import { setCurrentUser } from '../actions/index'
+import { CheckBox } from 'react-native-elements'
+import {ApiUrl} from '../consts/index'
+const apiUrl = ApiUrl();
 const pickerOption = {
   title: 'Select Avatar',
   quality: 0,
@@ -42,50 +44,152 @@ import {connect} from 'react-redux';
 
 const {height, width} = Dimensions.get('window');
 
+import ImagePicker from 'react-native-image-picker';
+
+// More info on all the options is below in the API Reference... just some common use cases shown here
+
 class EditProfile extends React.Component {
 
     constructor(props) {
         super(props);
-      //  this.state = { showDatepicker: false, loading:false, loadData:[] ,avatarSource: null, showPicker: 'none', inputName: '', inputNumber: '', inputEmail: '', inputBirthday: '', inputWeight: '', inputHeight: '' };
-        this.state = { showDatepicker: false, loading:false, loadData:[] ,avatarSource: null, showPicker: 'none', inputName: this.props.currentUser.fullName, avatarSource: this.props.currentUser.image,  inputNumber: this.props.currentUser.phoneNumber, inputEmail: this.props.currentUser.email, inputBirthday: this.props.currentUser.birthday, inputWeight: this.props.currentUser.weight, inputHeight: this.props.currentUser.height };
+      //  this.state = { showDatepicker: false, loading:false, loadData:[] ,avatarSource: null, showPicker: 'none', fullName: '', phoneNumber: '', email: '', birthday: '', weight: '', height: '' };
+        this.state = { maleChecked: this.props.currentUser.sex ==="male" ? true:false,imageData: {}, token: "",showDatepicker: false,hasNewImage: false, loading:false, loadData:[] , showPicker: 'none', fullName: this.props.currentUser.fullName, profileImage: this.props.currentUser.profileImage,  phoneNumber: this.props.currentUser.phoneNumber, email: this.props.currentUser.email, birthday: this.props.currentUser.birthday, weight: this.props.currentUser.weight, height: this.props.currentUser.height, sex: this.props.currentUser.sex };
 
     }
 
+    componentDidMount() {
+        this._isMounted = true;
+        if(this._isMounted) {
+            GetToken()
+            .then(token => this.setState({token}))
+            .catch(err => console.error(err))
+        }
+    }
+    componentWillUnmount() {
+        this._isMounted = false;
+
+    }
 
     changePhoto(){
-        var self = this;
-        ImagePicker.showImagePicker(pickerOption, (response) => {
-
-          if (response.didCancel) {
-            console.log('User cancelled image picker');
-          }
-          else if (response.error) {
-            alert('ImagePicker Error: ', response.error);
-          }
-          else {
-            let source = { uri: response.uri };
-
-            // You can also display the image using data:
-            // let source = { uri: 'data:image/jpeg;base64,' + response.data };
-           // alert(response.uri)
-            self.setState({
-              avatarSource: response.uri
-            });
-
-          }
-        });
+        console.log("change photo toch")
+        this.setState({hasNewImage : true})
+        const options = {};
+        ImagePicker.launchImageLibrary(options, response => {
+            console.log("response",response);
+            if(!response.didCancel) {
+                const data = new FormData();
+                data.append('profileImage', {
+                uri : response.uri,
+                type: response.type,
+                name: 'avatar'
+                });
+                this.setState({imageData: data})
+                //let source = { uri: 'data:image/jpeg;base64,' + response.data };
+                let source = { uri: response.uri };
+                this.setState({
+                    profileImage: source.uri
+                });
+            }
+        })
+        
+        
     }
 
     showPicker(){
         this.setState({ showPicker: 'flex' })
     }
 
-    backProfile(){
-        Actions.profile({});
+    backProfile(navigate){
+        this.setState({isLoading:false});
+      
+        navigate('Profile');
     }
 
-    updateProfile(){
+    updateProfile(navigate) {
+        console.log("toching")
+        let sex = this.state.maleChecked ? "male" : "female";
+        let date = "";
+        if(this.state.selectedDate) {
+            date = this.state.selectedDate.format("jYYYY/jMM/jDD");
+            this.setState({birthday: date})
+        }
+        else {
+             date = this.state.birthday;
+        }
+        console.log("updating");
+        return fetch(`${apiUrl}/updateProfile`, {
+            method: 'POST',
+            headers: {
+            Accept: 'application/json',
+            'Content-Type': 'application/json'
+            },
+            
+            body: JSON.stringify({
+                token: this.state.token,
+                fullName: this.state.fullName,
+                phoneNumber: this.state.phoneNumber,
+                email: this.state.email,
+                birthday: date,
+                weight: this.state.weight,
+                height: this.state.height,
+                sex: sex,
+            }),
+            
+        })
+        .then((response) => response.json())
+        .then((responseJson) => {
+            console.log("responseJson",responseJson);
+            if(responseJson.status === 200) {
+                let currentUser = {
+                    fullName: this.state.fullName,
+                    phoneNumber: this.state.phoneNumber,
+                    email: this.state.email,
+                    birthday: this.state.birthday,
+                    weight: this.state.weight,
+                    height: this.state.height,
+                    sex: sex,
+                    profileImage: this.state.profileImage
+                }
+               this.props.dispatch(setCurrentUser(currentUser))
+               console.log(this.state.hasNewImage && this.state.imageData);
+               if(this.state.hasNewImage && this.state.imageData) { 
+                return fetch(`${apiUrl}/addProfileImage`, {
+                    method: 'POST',
+                    headers: {
+                    token: this.state.token,
+                    Accept: 'application/json',
+                    'Content-Type': 'multipart/form-data',
+                    },
+                    
+                    body: this.state.imageData  
+                })
+                .then((response) => response.json())
+                .then(responseJson => {
+                    console.log(responseJson) 
+                    currentUser.profileImage = this.state.profileImage;
+                    this.props.dispatch(setCurrentUser(currentUser))
+                    this.setState({isLoading:false})
 
+                    
+                    navigate('Home');
+                    return responseJson
+                   }
+                )}
+               else {
+                    navigate('Home');
+               }
+               
+            }
+        
+            return responseJson;
+          
+        })
+        .catch((err) => {
+            console.log(err)
+            return err
+        })
+        
+      
     }
 
     logOut(){
@@ -107,35 +211,42 @@ class EditProfile extends React.Component {
     }
 
     render() {
+        const {navigate} = this.props.navigation;
+
         return (
             <KeyboardAwareScrollView
             resetScrollToCoords={{ x: 0, y: 0 }}
             contentContainerStyle={styles.profileContainer}
-            scrollEnabled={false}>
+            scrollEnabled={true}>
 
              { this.state.loading ? <View style={[styles.SpinnerContainer, styles.horizontal]}>
             <ActivityIndicator size="large" color="#fff" />
           </View> : null }
 
-
                 <View style={styles.profileHeader}>
                     <View style={styles.navbarContainer}>
                         <View style={styles.navbarContainerleft}>
                             <View style={styles.navbarActionTouch}>
-                                <TouchableWithoutFeedback underlayColor={'transparent'} onPress={ () => this.updateProfile() }>
+                                <TouchableOpacity underlayColor={'transparent'} onPress={ () => this.updateProfile(navigate) }>
+                                <View pointerEvents='none'>
                                     <Image style={styles.navbarActionIMG}
                                         source={require('../../assets/img/ico_check.png')}>
                                     </Image>
-                                </TouchableWithoutFeedback>
+                                    <TextInput editable={false} />
+                                    </View>
+                                </TouchableOpacity>
                             </View>
                         </View>
                         <View style={styles.navbarContainerRight}>
                             <View style={styles.navbarActionTouch}>
-                                <TouchableWithoutFeedback underlayColor={'transparent'} onPress={ () => this.backProfile() }>
-                                <Image style={styles.navbarActionIMG}
-                                    source={require('../../assets/img/ico_back.png')}>
-                                </Image>
-                                </TouchableWithoutFeedback>
+                                <TouchableOpacity underlayColor={'transparent'} onPress={ () => this.backProfile(navigate) }>
+                                    <View pointerEvents='none'>
+                                        <Image style={styles.navbarActionIMG}
+                                            source={require('../../assets/img/ico_back.png')}>
+                                        </Image>
+                                        <TextInput editable={false} />
+                                    </View>
+                                </TouchableOpacity>
                             </View>
                         </View>
                     </View>
@@ -146,14 +257,14 @@ class EditProfile extends React.Component {
                     </View>
                 </View>
                 <View style={styles.profileFrom}>
-                    <TouchableHighlight underlayColor={'transparent'} onPress={ () => this.changePhoto() }>
-                        <View style={styles.profileFormAvatar}>
-                           { ( this.state.avatarSource == null || this.state.avatarSource == ""  || this.state.avatarSource == 'http://rota.social:443/') ?
+                    <TouchableOpacity underlayColor={'transparent'} onPress={ () => this.changePhoto() }>
+                        <View pointerEvents='none'  style={styles.profileFormAvatar}>
+                           { ( this.state.profileImage == null || this.state.profileImage == "") ?
                             <Image style={[styles.profileHeaderAvatar, { width: 160, height: 160 }]}
                                     source={ require('../../assets/img/no-image.jpg') }
                                     /> :
                                     <Image style={[styles.profileHeaderAvatar, { width: 160, height: 160 }]}
-                                    source={{uri: this.state.avatarSource.toString() }}    
+                                    source={{uri: this.state.profileImage.toString()}}    
                                   />
                             }
                              <View style={styles.profileAvatarEdit}>
@@ -161,9 +272,9 @@ class EditProfile extends React.Component {
                                   source={require('../../assets/img/ico_photo.png')}
                                 />
                             </View>
+                            <TextInput editable={false} />
                         </View>
-                    </TouchableHighlight>
-
+                    </TouchableOpacity>
                     <Toast ref="toast" style={{zIndex:1001}} positionValue={200} position='top' opacity={0.8}
                     textStyle={{fontSize:18,fontFamily: 'IRANSansMobile',color:'#fff'}} />
 
@@ -171,11 +282,12 @@ class EditProfile extends React.Component {
                     <View style={styles.formRow}>
                         <View style={styles.formInputContainer}>
                             <TextInput
+                                editable={true}
                                 returnKeyType="done"
                                 placeholderTextColor="white"
                                 style={[styles.formInput, styles.fontCustom]}
-                                onChangeText={(inputName) => this.setState({inputName})}
-                                value={this.state.inputName}
+                                onChangeText={(fullName) => this.setState({fullName})}
+                                value={this.state.fullName}
                             />
                         </View>
                         <View style={styles.formLabelContainer}>
@@ -185,11 +297,12 @@ class EditProfile extends React.Component {
                     <View style={styles.formRow}>
                         <View style={styles.formInputContainer}>
                             <TextInput
+                                editable={true}
                                 returnKeyType="done"
                                 placeholderTextColor="white"
                                 keyboardType="number-pad"
                                 style={[styles.formInput, styles.fontCustom]}
-                                value={this.state.inputNumber}
+                                value={this.state.phoneNumber}
                             />
                         </View>
                         <View style={styles.formLabelContainer}>
@@ -199,11 +312,12 @@ class EditProfile extends React.Component {
                     <View style={styles.formRow}>
                         <View style={styles.formInputContainer}>
                             <TextInput
+                                editable={true}
                                 returnKeyType="done"
                                 placeholderTextColor="white"
                                 style={[styles.formInput, styles.fontCustom]}
-                                onChangeText={(inputEmail) => this.setState({inputEmail})}
-                                value={this.state.inputEmail}
+                                onChangeText={(email) => this.setState({email})}
+                                value={this.state.email}
                             />
                         </View>
                         <View style={styles.formLabelContainer}>
@@ -213,26 +327,27 @@ class EditProfile extends React.Component {
 
                     <View style={styles.formRow}>
                         <View style={styles.formInputContainer}>
-                        {/* {
-                            this.state.showDatepicker ? <PersianDatePicker
-                             style={ styles.datePicki }
-                             textStyle={ styles.datePickiText }
-                             minDate={ "1340/1/1" }
-                             onConfirm={this.onDateChange}
-                             onSelect={()=>this.setState({showDatepicker: false})}
-                             onCancel={()=>this.setState({showDatepicker: false})}
-                            /> :
+                         {/*
+                            <PersianDatePicker
+                                type="Jalali"
+                                yearCount={10}
+                                onConfirm={date => {this.setState({ selectedDate: date }); console.log(date)}}
+                                ref={ref => (this.picker = ref)}
+                                minDate={ "1338/08/08" }
+                                onPickerCancel={() => { }}
+                            /> 
                             <TextInput
                                 returnKeyType="done"
-                                onFocus={()=>this.setState({showDatepicker: true})}
-                                onBlur={()=>this.setState({showDatepicker: false})}
+                                onFocus={() => {console.log("onFocus");this.picker.showPicker();this.setState({showDatepicker: true})}}
+                                onBlur={()=>{console.log("onBlur");this.setState({showDatepicker: false})}}
                                 placeholderTextColor="white"
                                 style={[styles.formInput, styles.fontCustom]}
                                 editable={true}
-                                value={this.state.inputBirthday}
-                            />
-                        }
-                             */}
+                            >
+                                {this.state.selectedDate? this.state.selectedDate.format("jYYYY/jMM/jDD") :this.state.birthday}
+                            </TextInput>
+                         */}
+                             
                         </View>
                         <View style={styles.formLabelContainer}>
                             <Text style={[styles.formLabel, styles.fontCustom]}>تاریخ تولد</Text>
@@ -245,8 +360,8 @@ class EditProfile extends React.Component {
                                 placeholderTextColor="white"
                                 keyboardType="number-pad"
                                 style={[styles.formInput, styles.fontCustom]}
-                                onChangeText={(inputWeight) => this.setState({inputWeight})}
-                                value={this.state.inputWeight}
+                                onChangeText={(weight) => this.setState({weight})}
+                                value={this.state.weight}
                             />
                         </View>
                         <View style={styles.formLabelContainer}>
@@ -260,18 +375,35 @@ class EditProfile extends React.Component {
                                 placeholderTextColor="white"
                                 keyboardType="number-pad"
                                 style={[styles.formInput, styles.fontCustom]}
-                                onChangeText={(inputHeight) => this.setState({inputHeight})}
-                                value={this.state.inputHeight}
+                                onChangeText={(height) => this.setState({height})}
+                                value={this.state.height}
                             />
                         </View>
                         <View style={styles.formLabelContainer}>
                             <Text style={[styles.formLabel, styles.fontCustom]}>قد (CM)</Text>
                         </View>
                     </View>
+                    <View style={styles.formRow}>
+                        <View style={styles.formInputContainer}>
+                            <CheckBox
+                                title='مرد'
+                                checked={this.state.maleChecked}
+                                onPress={() => this.setState({maleChecked: !this.state.maleChecked})}
+                                />
+                            <CheckBox
+                                title='زن'
+                                checked={!this.state.maleChecked}
+                                onPress={() => this.setState({maleChecked: !this.state.maleChecked})}
+                            />
+                        </View>
+                        <View style={styles.formLabelContainer}>
+                            <Text style={[styles.formLabel, styles.fontCustom]}>جنسیت</Text>
+                        </View>
+                    </View>
                 </View>
                 <View style={styles.loginAction}>
 
-
+                    
                 </View>
             </KeyboardAwareScrollView>
         );
@@ -279,6 +411,11 @@ class EditProfile extends React.Component {
 }
 
 var styles = StyleSheet.create({
+    navbarActionTouch: {
+        top:20,
+        width:30,
+        height: 30
+    },
 
     SpinnerContainer: {
         flex: 1,
@@ -478,7 +615,7 @@ const mapStateToProps = (state) => (
 const mapDispatchToProps = (dispatch) => {
     return {
       dispatch: (action) => dispatch(action),
-
+  
     }
   }
 

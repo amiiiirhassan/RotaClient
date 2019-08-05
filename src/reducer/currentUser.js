@@ -1,4 +1,4 @@
-const initialState = {fullName: "",phoneNumber: "",email: "",height: "",birthday:"",image:"",weight:""};
+const initialState = {fullName: "",phoneNumber: "",email: "",height: "",birthday:"",image:"",weight:"",sex:""};
 const currentUser = (state = initialState , action) => {
     switch (action.type) {
         case 'SET_CURRENT_USER':
@@ -9,11 +9,12 @@ const currentUser = (state = initialState , action) => {
                     weight: action.currenUser.weight,
                     phoneNumber: action.currenUser.phoneNumber,
                     height: action.currenUser.height,
-                    image: action.currenUser.image
+                    profileImage: action.currenUser.profileImage,
+                    sex: action.currenUser.sex
                 }
         default:
             return state
     }
 }
 
-export default currentUser 
+export default currentUser

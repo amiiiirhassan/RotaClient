@@ -4,6 +4,7 @@ import { Dimensions, ImageBackground, StyleSheet, View } from 'react-native';
 import HomeBody from '../components/HomeBody';
 import HomeBottom from '../components/HomeBottom';
 import HomeHeader from '../components/HomeHeader';
+import { connect } from 'react-redux';
 const {height, width} = Dimensions.get('window');
 const interval = null;
 
@@ -66,7 +67,7 @@ class Home extends React.Component {
                 <View style={styles.homeContainer}>
                     { (typeof step == "object") ? <HomeHeader step={ step } /> : null }
                     <View style={styles.homeBody}>
-                        <HomeBody navigation={this.props.navigation} step={ step } name={this.state.name} profileImg={this.state.profileImg} />
+                        <HomeBody navigation={this.props.navigation} currentUser={this.props.currentUser} step={ step } name={this.state.name} profileImg={this.state.profileImg} />
                         <HomeBottom />
                     </View>
                 </View>        
@@ -287,5 +288,13 @@ var styles = StyleSheet.create({
 
 });
 
-
-export default Home
+const mapStateToProps = (state) => (
+    state
+  )
+  mapDispatchToProps = (dispatch) => {
+    return {
+      dispatch: (action) => dispatch(action),
+  
+    }
+  }
+export default connect (mapStateToProps,mapDispatchToProps)(Home);

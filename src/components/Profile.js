@@ -7,10 +7,12 @@ import {
     Text,
     View,
     Image,
+    Platform,
     TextInput,
     ImageBackground,
     TouchableWithoutFeedback,
-    TouchableHighlight
+    TouchableHighlight,
+    TouchableOpacity
 } from 'react-native';
 
 import { connect } from 'react-redux';
@@ -18,15 +20,17 @@ import { connect } from 'react-redux';
 import { Button,FormInput,FormLabel } from 'react-native-elements';
 
 import { KeyboardAwareScrollView } from 'react-native-keyboard-aware-scroll-view'
-
+import {ApiUrl} from '../consts/index'
+const apiUrl = ApiUrl();
 
 const {height, width} = Dimensions.get('window');
 
  class Profile extends React.Component {
     constructor(props) {
         super(props);
-        this.state = { inputName: this.props.currentUser.fullName, avatarSource: this.props.currentUser.image,  inputNumber: this.props.currentUser.phoneNumber, inputEmail: this.props.currentUser.email, inputBirthday: this.props.currentUser.birthday, inputWeight: this.props.currentUser.weight, inputHeight: this.props.currentUser.height };
+        this.state = { sex: this.props.currentUser.sex, fullName: this.props.currentUser.fullName, profileImage: this.props.currentUser.profileImage,  phoneNumber: this.props.currentUser.phoneNumber, email: this.props.currentUser.email, birthday: this.props.currentUser.birthday, weight: this.props.currentUser.weight, height: this.props.currentUser.height };
     }
+
 
     logOut(){
         Alert.alert(
@@ -43,7 +47,7 @@ const {height, width} = Dimensions.get('window');
           { cancelable: true }
         )
     }
-
+    
     goToEditProfile = (navigate) => {
         console.log("edit profile");
       navigate('EditProfile')
@@ -54,7 +58,6 @@ const {height, width} = Dimensions.get('window');
 
     render() {
         const {navigate} = this.props.navigation;
-
         return (
             <KeyboardAwareScrollView
             resetScrollToCoords={{ x: 0, y: 0 }}
@@ -65,29 +68,14 @@ const {height, width} = Dimensions.get('window');
                     <View style={styles.navbarContainer}>
                         <View style={styles.navbarContainerleft}>
                             <View style={styles.navbarActionTouch}>
-                            <TouchableWithoutFeedback underlayColor={'transparent'} onPress={ () => this.goToEditProfile(navigate) }>
-                                    <Image style={styles.navbarActionIMG}
-                                        source={require('../../assets/img/ico_edit.png')}>
-                                    </Image>
-                                </TouchableWithoutFeedback>
-
-                                {
-
-                                /*
-                                  <Button
-                                    onPress={() => this.goToEditProfile(navigate)}
-                                    title="Press Me"
-                                    color="#841584"
-                                />
-                                <TouchableHighlight underlayColor={'transparent'} onPress={this.goToEditProfile }>
-                                    <Image style={styles.navbarActionIMG}
-                                        source={require('../../assets/img/ico_edit.png')}>
-                                    </Image>
-                                </TouchableHighlight>
-                                */
-                                }
-
-
+                                <TouchableOpacity underlayColor={'transparent'} onPress={ () => this.goToEditProfile(navigate) }>
+                                    <View pointerEvents='none'>
+                                        <Image style={styles.navbarActionIMG}
+                                            source={require('../../assets/img/ico_edit.png')}>
+                                        </Image>
+                                        <TextInput editable={false} />
+                                    </View>
+                                </TouchableOpacity>    
                             </View>
                         </View>
                         <View style={styles.navbarContainerRight}>
@@ -108,26 +96,18 @@ const {height, width} = Dimensions.get('window');
                 </View>
                 <View style={styles.profileFrom}>
                     <View style={styles.profileFormAvatar}>
-                    { ( this.state.avatarSource == null || this.state.avatarSource == "" || this.state.avatarSource == 'http://rota.social:443/' ) ?
+                    { ( this.state.profileImage == null || this.state.profileImage == "" ) ?
                        <Image style={[styles.profileHeaderAvatar, { width: 160, height: 160 }]}
                               source={ require('../../assets/img/no-image.jpg') }                        
                             /> :
 
-                         /* 
-                        <FastImage
-                            style={[styles.profileHeaderAvatar, { width: 160, height: 160 }]}
-                            source={{
-                              uri: this.state.avatarSource.toString(),
-                              priority: FastImage.priority.normal,
-                            }}
-                          />
-                          */
+                         
                          <Image style={[styles.profileHeaderAvatar, { width: 160, height: 160 }]}
-                            source={{uri: this.state.avatarSource.toString() }}    
+                            source={{uri: this.state.profileImage}}    
                           />
-
+                         
                     }
-
+                        
 
                     </View>
                     <View style={styles.formRow}>
@@ -137,8 +117,8 @@ const {height, width} = Dimensions.get('window');
                                 editable={false}
                                 placeholderTextColor="white"
                                 style={[styles.formInput, styles.fontCustom]}
-                                onChangeText={(inputName) => this.setState({inputName})}
-                                value={this.state.inputName}
+                                onChangeText={(fullName) => this.setState({fullName})}
+                                value={this.state.fullName}
                             />
                         </View>
                         <View style={styles.formLabelContainer}>
@@ -153,7 +133,7 @@ const {height, width} = Dimensions.get('window');
                                 placeholderTextColor="white"
                                 keyboardType="number-pad"                                
                                 style={[styles.formInput, styles.fontCustom]}
-                                value={this.state.inputNumber}
+                                value={this.state.phoneNumber}
                             />
                         </View>
                         <View style={styles.formLabelContainer}>
@@ -167,8 +147,8 @@ const {height, width} = Dimensions.get('window');
                                 returnKeyType="done"
                                 placeholderTextColor="white"
                                 style={[styles.formInput, styles.fontCustom]}
-                                onChangeText={(inputEmail) => this.setState({inputEmail})}
-                                value={this.state.inputEmail}
+                                onChangeText={(email) => this.setState({email})}
+                                value={this.state.email}
                             />
                         </View>
                         <View style={styles.formLabelContainer}>
@@ -182,8 +162,8 @@ const {height, width} = Dimensions.get('window');
                                 returnKeyType="done"
                                 placeholderTextColor="white"
                                 style={[styles.formInput, styles.fontCustom]}
-                                onChangeText={(inputBirthday) => this.setState({inputBirthday})}
-                                value={this.state.inputBirthday}
+                                onChangeText={(birthday) => this.setState({birthday})}
+                                value={this.state.birthday}
                             />
                         </View>
                         <View style={styles.formLabelContainer}>
@@ -198,8 +178,8 @@ const {height, width} = Dimensions.get('window');
                                 placeholderTextColor="white"
                                 keyboardType="number-pad"
                                 style={[styles.formInput, styles.fontCustom]}
-                                onChangeText={(inputWeight) => this.setState({inputWeight})}
-                                value={this.state.inputWeight}
+                                onChangeText={(weight) => this.setState({weight})}
+                                value={this.state.weight}
                             />
                         </View>
                         <View style={styles.formLabelContainer}>
@@ -214,12 +194,29 @@ const {height, width} = Dimensions.get('window');
                                 placeholderTextColor="white"
                                 keyboardType="number-pad"
                                 style={[styles.formInput, styles.fontCustom]}
-                                onChangeText={(inputHeight) => this.setState({inputHeight})}
-                                value={this.state.inputHeight}
+                                onChangeText={(height) => this.setState({height})}
+                                value={this.state.height}
                             />
                         </View>
                         <View style={styles.formLabelContainer}>
                             <Text style={[styles.formLabel, styles.fontCustom]}>قد (CM)</Text>
+                        </View>
+                    </View>
+                    <View style={styles.formRow}>
+                        <View style={styles.formInputContainer}>
+                            <TextInput 
+                                returnKeyType="done"
+                                editable={false}
+                                placeholderTextColor="white"
+                                keyboardType="number-pad"
+                                style={[styles.formInput, styles.fontCustom]}
+                                onChangeText={(sex) => this.setState({sex})}
+                            >
+                                {this.state.sex === 'male' ? "مرد" : "زن" }
+                            </TextInput>
+                        </View>
+                        <View style={styles.formLabelContainer}>
+                            <Text style={[styles.formLabel, styles.fontCustom]}>جنسیت</Text>
                         </View>
                     </View>
                 </View>
@@ -254,7 +251,7 @@ const mapDispatchToProps = (dispatch) => {
 
 var styles = StyleSheet.create({
 
-
+    
     navbarActionTouch: {
         top:20,
 
