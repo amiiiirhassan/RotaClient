@@ -7,7 +7,9 @@
 import React, {Component} from 'react';
 import Signin from '../containers/Signin';
 import VerifySignin from '../components/VerifySignin';
-import Home from './Home';
+import Home from '../containers/Home';
+import Profile from '../components/Profile';
+import EditProfile from '../components/EditProfile';
 import AuthGuard from '../components/AuthGuard';
 import {createStackNavigator, createAppContainer} from 'react-navigation';
 const MainNavigator = createStackNavigator({
@@ -15,7 +17,9 @@ const MainNavigator = createStackNavigator({
   AuthGuard: {screen: AuthGuard},
   Signin: {screen: Signin},
   VerifySignin: {screen: VerifySignin},
-  Home: {screen: Home}
+  Home: {screen: Home},
+  Profile: {screen: Profile},
+  EditProfile: {screen: EditProfile}
 
   
 },{
