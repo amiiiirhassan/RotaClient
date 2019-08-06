@@ -520,8 +520,8 @@ var styles = StyleSheet.create({
         alignItems: 'center',
         justifyContent: 'center',
         backgroundColor: '#5e5ec3',
-        top: -80,
-        position: 'absolute',
+       // top: -80,
+      //  position: 'absolute',
         zIndex: 4,
     },
     fontCustom:{
