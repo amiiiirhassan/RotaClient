@@ -1,4 +1,4 @@
-const developMode = true;
+const developMode = false;
 export const ApiUrl = () => {
     if(developMode) {
      return "http://d48428f5.ngrok.io";

@@ -3,6 +3,7 @@ package com.rotaclient;
 import android.app.Application;
 
 import com.facebook.react.ReactApplication;
+import com.reactnative.googlefit.GoogleFitPackage;
 import com.imagepicker.ImagePickerPackage;
 import com.oblador.keychain.KeychainPackage;
 import com.horcrux.svg.SvgPackage;
@@ -28,6 +29,7 @@ public class MainApplication extends Application implements ReactApplication {
     protected List<ReactPackage> getPackages() {
       return Arrays.<ReactPackage>asList(
           new MainReactPackage(),
+          new GoogleFitPackage(BuildConfig.APPLICATION_ID),
             new ImagePickerPackage(),
             new KeychainPackage(),
             new SvgPackage(),

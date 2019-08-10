@@ -5,6 +5,9 @@ import HomeBody from '../components/HomeBody';
 import HomeBottom from '../components/HomeBottom';
 import HomeHeader from '../components/HomeHeader';
 import { connect } from 'react-redux';
+import GoogleFit, { Scopes } from 'react-native-google-fit'
+
+
 const {height, width} = Dimensions.get('window');
 const interval = null;
 
@@ -22,6 +25,30 @@ class Home extends React.Component {
         }
     }
     componentDidMount() {
+// The list of available scopes inside of src/scopes.js file
+const options = {
+    scopes: [
+      Scopes.FITNESS_ACTIVITY_READ_WRITE,
+      Scopes.FITNESS_BODY_READ_WRITE,
+    ],
+  }
+  GoogleFit.authorize(options)
+    .then(authResult => {
+      if (authResult.success) {
+        console.log("AUTH_SUCCESS");
+          // ...
+  // Call when authorized
+  GoogleFit.startRecording((callback) => {
+    // Process data from Google Fit Recording API (no google fit app needed)
+  });
+      } else {
+        console.log("AUTH_DENIED", authResult.message);
+      }
+    })
+    .catch(() => {
+      console.log("AUTH_ERROR");
+    })
+  
 
     }
     numberToPersian(value){
