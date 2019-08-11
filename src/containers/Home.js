@@ -7,6 +7,8 @@ import HomeHeader from '../components/HomeHeader';
 import { connect } from 'react-redux';
 import GoogleFit, { Scopes } from 'react-native-google-fit'
 import {PermissionsAndroid} from 'react-native';
+import AppleHealthKit from 'rn-apple-healthkit';
+import { NativeAppEventEmitter } from 'react-native';
 
 
 const {height, width} = Dimensions.get('window');
@@ -93,6 +95,42 @@ componentDidMount() {
         .catch(err => {
             console.log("location error " + err)
         })
+    }
+    else {
+        let options = {
+            permissions: {
+              read: ["Height", "Weight", "StepCount", "DateOfBirth", "BodyMassIndex"],
+              write: ["Weight", "StepCount", "BodyMassIndex"]
+            }
+          };
+        
+        
+          function authorize(options) {
+            return new Promise((resolve, reject) => {
+                AppleHealthKit.initHealthKit(options, (err, results) => {
+                if (err) {
+                  reject(err);
+                } else {
+                  resolve(results)
+                  console.log(results)
+                  AppleHealthKit.setObserver({ type: 'Walking' });
+                    NativeAppEventEmitter.addListener(
+                        'observer',
+                        (callback) => console.log("start",callback)
+                    );
+                    let options = {
+                        startDate: (new Date(2016,1,1)).toISOString(), // required
+                        endDate:   (new Date()).toISOString() // optional; default now
+                    };
+                     AppleHealthKit.getDailyStepCountSamples(options, (err, results) => {
+                        console.log(results)
+                    });
+                }
+              })
+            })
+          }
+          authorize(options);
+          
     }
 
   
