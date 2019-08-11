@@ -1,11 +1,12 @@
 'use strict';
 import React from 'react';
-import { Dimensions, ImageBackground, StyleSheet, View } from 'react-native';
+import { Dimensions, ImageBackground, StyleSheet, View,Text } from 'react-native';
 import HomeBody from '../components/HomeBody';
 import HomeBottom from '../components/HomeBottom';
 import HomeHeader from '../components/HomeHeader';
 import { connect } from 'react-redux';
 import GoogleFit, { Scopes } from 'react-native-google-fit'
+import {PermissionsAndroid} from 'react-native';
 
 
 const {height, width} = Dimensions.get('window');
@@ -21,33 +22,77 @@ class Home extends React.Component {
             name: '',
             id: null,
             coin: 0,
-            mobile: null
+            mobile: null,
+            steps: 0,
+            daily: 0
         }
     }
-    componentDidMount() {
-// The list of available scopes inside of src/scopes.js file
-const options = {
-    scopes: [
-      Scopes.FITNESS_ACTIVITY_READ_WRITE,
-      Scopes.FITNESS_BODY_READ_WRITE,
-    ],
-  }
-  GoogleFit.authorize(options)
-    .then(authResult => {
-      if (authResult.success) {
-        console.log("AUTH_SUCCESS");
-          // ...
-  // Call when authorized
-  GoogleFit.startRecording((callback) => {
-    // Process data from Google Fit Recording API (no google fit app needed)
-  });
-      } else {
-        console.log("AUTH_DENIED", authResult.message);
+componentDidMount() {
+    async function requestCameraPermission() {
+        try {
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+          );
+          if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+            console.log('You ACCESS_FINE_LOCATION');
+          } else {
+            console.log('ACCESS_FINE_LOCATION denied');
+          }
+        } catch (err) {
+          console.warn(err);
+        }
       }
-    })
-    .catch(() => {
-      console.log("AUTH_ERROR");
-    })
+      requestCameraPermission()
+      .then(success => {
+        // The list of available scopes inside of src/scopes.js file
+        const options = {
+            scopes: [
+            Scopes.FITNESS_ACTIVITY_READ_WRITE,
+            Scopes.FITNESS_BODY_READ_WRITE,
+            ],
+        }
+        GoogleFit.authorize(options)
+            .then(authResult => {
+            if (authResult.success) {
+                console.log("AUTH_SUCCESS");
+                // ...
+                // Call when authorized
+                GoogleFit.startRecording((callback) => {
+                    // Process data from Google Fit Recording API (no google fit app needed)
+                    console.log(callback)
+                });
+                const options = {
+                    startDate: "2017-01-01T00:00:17.971Z", // required ISO8601Timestamp
+                    endDate: new Date().toISOString() // required ISO8601Timestamp
+                };
+                
+                GoogleFit.getDailyStepCountSamples(options)
+                .then((res) => {
+                    console.log('Daily steps >>> ', res)
+                    this.setState({daily:res['com.xiaomi.hm.health']})
+                })
+                .catch((err) => {console.warn(err)})
+                GoogleFit.observeSteps((callback) => {
+                    console.log(callback);
+                    if(callback) {
+                    this.setState ({steps: callback})
+                    }
+                })
+
+
+
+            } else {
+                console.log("AUTH_DENIED", authResult.message);
+            }
+            })
+            .catch(() => {
+            console.log("AUTH_ERROR");
+            })
+      })
+      .catch(err => {
+          console.log("location error " + err)
+      })
+
   
 
     }
@@ -88,7 +133,7 @@ const options = {
           step.value = parseInt(global.limit_step);
 
         return (
-
+                            
             <ImageBackground style={styles.homeBodyOverlay}
                 source={require('../../assets/img/gradient.png')}>
                 <View style={styles.homeContainer}>
@@ -99,6 +144,9 @@ const options = {
                     </View>
                 </View>        
             </ImageBackground>
+            
+
+            
 
 
             );
