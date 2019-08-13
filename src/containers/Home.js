@@ -58,29 +58,41 @@ componentDidMount() {
                 .then(authResult => {
                 if (authResult.success) {
                     console.log("AUTH_SUCCESS");
+                    GoogleFit.observeSteps((callback) => {
+                        console.log("start steps",callback);
+                     })
                     // ...
                     // Call when authorized
                     GoogleFit.startRecording((callback) => {
+                        
+                        GoogleFit.observeSteps((callback) => {
+                            console.log("start",callback)
+                            DeviceEventEmitter.addListener(
+                                'StepChangedEvent',
+                                //(steps) => callback(steps)
+                                (steps) => console.log('StepChangedEvent', steps)
+                            );
+                        })
                         // Process data from Google Fit Recording API (no google fit app needed)
                         console.log(callback)
                     });
+                    const date = new Date();
+                    let yesterday = new Date(date.setDate(date.getDate() - 1)).toISOString();
+                    
                     const options = {
-                        startDate: "2017-01-01T00:00:17.971Z", // required ISO8601Timestamp
+                        startDate: yesterday, // required ISO8601Timestamp
                         endDate: new Date().toISOString() // required ISO8601Timestamp
                     };
                     
                     GoogleFit.getDailyStepCountSamples(options)
                     .then((res) => {
-                        console.log('Daily steps >>> ', res)
-                        this.setState({daily:res['com.xiaomi.hm.health']})
+                        console.log('Daily steps >>> ', res[2].steps[1].value)
+                        let _steps = res[2].steps[1].value;
+
+                        this.setState({steps: _steps })
                     })
                     .catch((err) => {console.warn(err)})
-                    GoogleFit.observeSteps((callback) => {
-                        console.log(callback);
-                        if(callback) {
-                        this.setState ({steps: callback})
-                        }
-                    })
+
 
 
 
@@ -162,15 +174,17 @@ componentDidMount() {
 
     render() {
       let today = new Date();
-      let step = this.props.step;
+      let step = {value:0};
+      step.value = this.state.steps;
+      console.log(this.state.steps)
       if(typeof step == "undefined")
           step = {value: 0}
 
       if( typeof step.value == "undefined" || typeof step != "object" || step == "undefined" || step == null)
           step = {value: 0 };
 
-      if(step.value>global.limit_step)
-          step.value = parseInt(global.limit_step);
+      if(step.value>0)
+          step.value = parseInt(step.value);
 
         return (
                             
