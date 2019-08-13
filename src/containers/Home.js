@@ -142,12 +142,31 @@ componentDidMount() {
             })
           }
           authorize(options);
+
           
     }
 
   
 
     }
+     updateSteps = () => {
+        const date = new Date();
+        let yesterday = new Date(date.setDate(date.getDate() - 1)).toISOString();
+        
+        const options = {
+            startDate: yesterday, // required ISO8601Timestamp
+            endDate: new Date().toISOString() // required ISO8601Timestamp
+        };
+        
+        GoogleFit.getDailyStepCountSamples(options)
+        .then((res) => {
+            console.log('Daily steps >>> ', res[2].steps[1].value)
+            let _steps = res[2].steps[1].value;
+
+            this.setState({steps: _steps })
+        })
+        .catch((err) => {console.warn(err)})
+      }
     numberToPersian(value){
 
         if(typeof value != "undefined"){
@@ -191,7 +210,7 @@ componentDidMount() {
             <ImageBackground style={styles.homeBodyOverlay}
                 source={require('../../assets/img/gradient.png')}>
                 <View style={styles.homeContainer}>
-                    { (typeof step == "object") ? <HomeHeader step={ step } /> : null }
+                    { (typeof step == "object") ? <HomeHeader updateSteps={this.updateSteps} step={ step } /> : null }
                     <View style={styles.homeBody}>
                         <HomeBody navigation={this.props.navigation} currentUser={this.props.currentUser} step={ step } name={this.state.name} profileImg={this.state.profileImg} />
                         <HomeBottom />

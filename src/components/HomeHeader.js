@@ -14,7 +14,7 @@ import {
 } from 'react-native';
 
 
-//const jalaali = require('jalaali-js')
+const jalaali = require('jalaali-js')
 
 import { Button } from 'react-native-elements';
 
@@ -55,8 +55,8 @@ class HomeHeader extends React.Component {
     render() {
 
 
-        //let today = jalaali.toJalaali(new Date());
-        let today = new Date();
+        let today = jalaali.toJalaali(new Date());
+        //let today = new Date();
         let step = this.props.step;
         if(step && typeof step.value != "undefined"){
             if(step.value.toString().indexOf('undef')>=0)
@@ -72,21 +72,20 @@ class HomeHeader extends React.Component {
                 { (step) && 
                         <View style={styles.homeHeaderArt}>
                             <View style={styles.homeProgressContainer}>
-                                <View style={styles.homeStatContainer}>
-
-                                    <TouchableWithoutFeedback onPress={ () => Actions.history({ todaySteps: this.props.step }) }>
+                                <View style={styles.homeStatContainer}>  
+                                    <TouchableWithoutFeedback onPress={ () => this.props.updateSteps() }>
                                     <Text style={[styles.homeStatRecordText, styles.fontCustom]}>
                                      { this.numberToPersian(parseInt(step.value)) }
                                     </Text>
                                     </TouchableWithoutFeedback>
                                     <View style={styles.homeStatSeprator}>
                                     </View>
-                                    <TouchableWithoutFeedback onPress={ () => Actions.history({ todaySteps: this.props.step }) }>
+                                    <TouchableWithoutFeedback onPress={ () => this.props.updateSteps() }>
                                         <Text style={[styles.homeStatMessageText, styles.fontCustom]}>
                                             گام‌های امروز شما
                                         </Text>
                                     </TouchableWithoutFeedback>
-                                    <TouchableWithoutFeedback onPress={ () => Actions.history({ todaySteps: this.props.step }) }>
+                                    <TouchableWithoutFeedback onPress={ () => this.props.updateSteps() }>
                                         <Text  style={[styles.homeStatDateText, styles.fontCustom]}>
                                             { this.numberToPersian(today.jd) + ' ' + this.getPersianMonth(today.jm) + ' ' + this.numberToPersian(today.jy) }
                                         </Text>
