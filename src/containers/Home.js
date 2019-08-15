@@ -1,10 +1,16 @@
 'use strict';
 import React from 'react';
-import { Dimensions, ImageBackground, StyleSheet, View } from 'react-native';
+import { Dimensions, ImageBackground, StyleSheet, View,Text,Platform } from 'react-native';
 import HomeBody from '../components/HomeBody';
 import HomeBottom from '../components/HomeBottom';
 import HomeHeader from '../components/HomeHeader';
 import { connect } from 'react-redux';
+import GoogleFit, { Scopes } from 'react-native-google-fit'
+import {PermissionsAndroid} from 'react-native';
+import AppleHealthKit from 'rn-apple-healthkit';
+import { NativeAppEventEmitter } from 'react-native';
+
+
 const {height, width} = Dimensions.get('window');
 const interval = null;
 
@@ -18,12 +24,169 @@ class Home extends React.Component {
             name: '',
             id: null,
             coin: 0,
-            mobile: null
+            mobile: null,
+            steps: 0,
+            daily: 0
         }
     }
-    componentDidMount() {
-
+componentDidMount() {
+    async function requestCameraPermission() {
+        try {
+          const granted = await PermissionsAndroid.request(
+            PermissionsAndroid.PERMISSIONS.ACCESS_FINE_LOCATION
+          );
+          if (granted === PermissionsAndroid.RESULTS.GRANTED) {
+            console.log('You ACCESS_FINE_LOCATION');
+          } else {
+            console.log('ACCESS_FINE_LOCATION denied');
+          }
+        } catch (err) {
+          console.warn(err);
+        }
     }
+    if (Platform.OS === 'android') {
+        requestCameraPermission()
+        .then(success => {
+            // The list of available scopes inside of src/scopes.js file
+            const options = {
+                scopes: [
+                Scopes.FITNESS_ACTIVITY_READ_WRITE,
+                Scopes.FITNESS_BODY_READ_WRITE,
+                ],
+            }
+            GoogleFit.authorize(options)
+                .then(authResult => {
+                if (authResult.success) {
+                    console.log("AUTH_SUCCESS");
+                    GoogleFit.observeSteps((callback) => {
+                        console.log("start steps",callback);
+                    })
+                    // ...
+                    // Call when authorized
+                    GoogleFit.startRecording((callback) => {
+                        
+                        GoogleFit.observeSteps((callback) => {
+                            console.log("start",callback)
+                            DeviceEventEmitter.addListener(
+                                'StepChangedEvent',
+                                //(steps) => callback(steps)
+                                (steps) => console.log('StepChangedEvent', steps)
+                            );
+                        })
+                        // Process data from Google Fit Recording API (no google fit app needed)
+                        console.log(callback)
+                    });
+                    const date = new Date();
+                    let yesterday = new Date(date.setDate(date.getDate() - 1)).toISOString();
+                    
+                    const options = {
+                        startDate: yesterday, // required ISO8601Timestamp
+                        endDate: new Date().toISOString() // required ISO8601Timestamp
+                    };
+                    
+                    GoogleFit.getDailyStepCountSamples(options)
+                    .then((res) => {
+                        console.log('Daily steps >>>',res);
+                        console.log('Daily steps >>> ', res[2].steps[0].value)
+                        let _steps = res[res.length - 1].steps[0].value;
+
+                        this.setState({steps: _steps })
+                    })
+                    .catch((err) => {console.warn(err)})
+
+
+
+
+                } else {
+                    console.log("AUTH_DENIED", authResult.message);
+                }
+                })
+                .catch(() => {
+                console.log("AUTH_ERROR");
+                })
+        })
+        .catch(err => {
+            console.log("location error " + err)
+        })
+    }
+        else {
+            let options = {
+                permissions: {
+                read: ["Height", "Weight", "StepCount", "DateOfBirth", "BodyMassIndex"],
+                write: ["Weight", "StepCount", "BodyMassIndex"]
+                }
+            };
+            
+            
+
+            this.authorize(options);
+
+            
+        }
+    }
+    authorize(options) {
+        return new Promise((resolve, reject) => {
+            AppleHealthKit.initHealthKit(options, (err, results) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(results)
+              console.log(results)
+              AppleHealthKit.setObserver({ type: 'Walking' });
+                NativeAppEventEmitter.addListener(
+                    'observer',
+                    (callback) => console.log("start",callback)
+                );
+
+                const date = new Date();
+                let yesterday = new Date(date.setDate(date.getDate() - 1)).toISOString();
+                
+                const options = {
+                    startDate: yesterday, // required ISO8601Timestamp
+                    endDate: new Date().toISOString() // required ISO8601Timestamp
+                };
+                 AppleHealthKit.getDailyStepCountSamples(options, (err, res) => {
+                    console.log(res)
+                    if(res.length) {
+                        let _steps = res[res.length - 1].steps[0].value ;
+                        this.setState({steps: _steps })
+                    }
+                });
+            }
+          })
+        })
+    }
+    updateSteps = () => {
+        if (Platform.OS === 'android') {
+            const date = new Date();
+            let yesterday = new Date(date.setDate(date.getDate() - 1)).toISOString();
+            
+            const options = {
+                startDate: yesterday, // required ISO8601Timestamp
+                endDate: new Date().toISOString() // required ISO8601Timestamp
+            };
+            
+            GoogleFit.getDailyStepCountSamples(options)
+            .then((res) => {
+                console.log('Daily steps >>> ', res[2].steps[1].value)
+                let _steps = res[res.length - 1].steps[0].value;
+
+                this.setState({steps: _steps })
+            })
+            .catch((err) => {console.warn(err)})
+       }
+       else {
+        let options = {
+            permissions: {
+              read: ["Height", "Weight", "StepCount", "DateOfBirth", "BodyMassIndex"],
+              write: ["Weight", "StepCount", "BodyMassIndex"]
+            }
+          };
+         this.authorize(options);
+
+       }
+    }
+
     numberToPersian(value){
 
         if(typeof value != "undefined"){
@@ -50,28 +213,33 @@ class Home extends React.Component {
 
     render() {
       let today = new Date();
-      let step = this.props.step;
+      let step = {value:0};
+      step.value = this.state.steps;
+      console.log(this.state.steps)
       if(typeof step == "undefined")
           step = {value: 0}
 
       if( typeof step.value == "undefined" || typeof step != "object" || step == "undefined" || step == null)
           step = {value: 0 };
 
-      if(step.value>global.limit_step)
-          step.value = parseInt(global.limit_step);
+      if(step.value>0)
+          step.value = parseInt(step.value);
 
         return (
-
+                            
             <ImageBackground style={styles.homeBodyOverlay}
                 source={require('../../assets/img/gradient.png')}>
                 <View style={styles.homeContainer}>
-                    { (typeof step == "object") ? <HomeHeader step={ step } /> : null }
+                    { (typeof step == "object") ? <HomeHeader updateSteps={this.updateSteps} step={ step } /> : null }
                     <View style={styles.homeBody}>
                         <HomeBody navigation={this.props.navigation} currentUser={this.props.currentUser} step={ step } name={this.state.name} profileImg={this.state.profileImg} />
                         <HomeBottom />
                     </View>
                 </View>        
             </ImageBackground>
+            
+
+            
 
 
             );

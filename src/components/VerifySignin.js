@@ -20,6 +20,7 @@ import { Button,FormInput,FormLabel } from 'react-native-elements';
 import { AnimatedCircularProgress } from 'react-native-circular-progress';
 
 import Toast, {DURATION} from 'react-native-easy-toast'
+import {setCurrentUser} from '../actions/index';
 
 
 
@@ -125,7 +126,10 @@ class VerifySignin extends React.Component {
             console.log(responseJson);
             if(responseJson.status === 200) {
                 SaveToken(responseJson.token)
-                .then(()=> navigate('Home'))
+                .then(()=> {
+                    this.props.dispatch(setCurrentUser(responseJson.currentUser))
+                    navigate('Home')
+                })
                 .catch((err) => console.log(err))
                 
 

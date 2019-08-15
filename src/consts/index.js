@@ -1,7 +1,7 @@
-const developMode = true;
+const developMode = false;
 export const ApiUrl = () => {
     if(developMode) {
-     return "http://d48428f5.ngrok.io";
+     return "http://832049ac.ngrok.io";
     }
     return "https://mysterious-lake-54391.herokuapp.com"
 }

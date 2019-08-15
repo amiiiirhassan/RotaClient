@@ -51,6 +51,7 @@ class Signin extends React.Component {
         console.log("responseJson",responseJson);
         if(responseJson.status === 200) {
           this.props.dispatch(setCurrentUserPhoneNumber(this.state.phoneNumber));
+
           navigate('VerifySignin');
         }
         else {

@@ -53,7 +53,7 @@ class EditProfile extends React.Component {
     constructor(props) {
         super(props);
       //  this.state = { showDatepicker: false, loading:false, loadData:[] ,avatarSource: null, showPicker: 'none', fullName: '', phoneNumber: '', email: '', birthday: '', weight: '', height: '' };
-        this.state = { maleChecked: this.props.currentUser.sex ==="male" ? true:false,imageData: {}, token: "",showDatepicker: false,hasNewImage: false, loading:false, loadData:[] , showPicker: 'none', fullName: this.props.currentUser.fullName, profileImage: this.props.currentUser.profileImage,  phoneNumber: this.props.currentUser.phoneNumber, email: this.props.currentUser.email, birthday: this.props.currentUser.birthday, weight: this.props.currentUser.weight, height: this.props.currentUser.height, sex: this.props.currentUser.sex };
+        this.state = { maleChecked: this.props.currentUser.sex ==="male" ? true:false,imageData: {}, token: "",showDatepicker: false,hasNewImage: false, isLoading:false, loadData:[] , showPicker: 'none', fullName: this.props.currentUser.fullName, profileImage: this.props.currentUser.profileImage,  phoneNumber: this.props.currentUser.phoneNumber, email: this.props.currentUser.email, birthday: this.props.currentUser.birthday, weight: this.props.currentUser.weight, height: this.props.currentUser.height, sex: this.props.currentUser.sex };
 
     }
 
@@ -106,6 +106,7 @@ class EditProfile extends React.Component {
     }
 
     updateProfile(navigate) {
+        this.setState({isLoading:true});
         console.log("toching")
         let sex = this.state.maleChecked ? "male" : "female";
         let date = "";
@@ -176,6 +177,7 @@ class EditProfile extends React.Component {
                    }
                 )}
                else {
+                    this.setState({isLoading:false})
                     navigate('Home');
                }
                
@@ -219,20 +221,22 @@ class EditProfile extends React.Component {
             contentContainerStyle={styles.profileContainer}
             scrollEnabled={true}>
 
-             { this.state.loading ? <View style={[styles.SpinnerContainer, styles.horizontal]}>
+             { this.state.isLoading ? <View style={[styles.SpinnerContainer, styles.horizontal]}>
             <ActivityIndicator size="large" color="#fff" />
-          </View> : null }
+          </View> : <Text>loading</Text> }
 
                 <View style={styles.profileHeader}>
                     <View style={styles.navbarContainer}>
                         <View style={styles.navbarContainerleft}>
-                            <View style={styles.navbarActionTouch}>
+                            <View >
+                                {//style={styles.navbarActionTouch}
+                                }
                                 <TouchableOpacity underlayColor={'transparent'} onPress={ () => this.updateProfile(navigate) }>
-                                <View pointerEvents='none'>
-                                    <Image style={styles.navbarActionIMG}
-                                        source={require('../../assets/img/ico_check.png')}>
-                                    </Image>
-                                    <TextInput editable={false} />
+                                    <View pointerEvents='none'>
+                                        <Image style={styles.navbarActionIMG}
+                                            source={require('../../assets/img/ico_check.png')}>
+                                        </Image>
+                                        <TextInput editable={false} />
                                     </View>
                                 </TouchableOpacity>
                             </View>
