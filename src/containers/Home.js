@@ -86,8 +86,9 @@ componentDidMount() {
                     
                     GoogleFit.getDailyStepCountSamples(options)
                     .then((res) => {
-                        console.log('Daily steps >>> ', res[2].steps[1].value)
-                        let _steps = res[2].steps[1].value;
+                        console.log('Daily steps >>>',res);
+                        console.log('Daily steps >>> ', res[2].steps[0].value)
+                        let _steps = res[res.length - 1].steps[0].value;
 
                         this.setState({steps: _steps })
                     })
@@ -130,12 +131,20 @@ componentDidMount() {
                         'observer',
                         (callback) => console.log("start",callback)
                     );
-                    let options = {
-                        startDate: (new Date(2016,1,1)).toISOString(), // required
-                        endDate:   (new Date()).toISOString() // optional; default now
+
+                    const date = new Date();
+                    let yesterday = new Date(date.setDate(date.getDate() - 1)).toISOString();
+                    
+                    const options = {
+                        startDate: yesterday, // required ISO8601Timestamp
+                        endDate: new Date().toISOString() // required ISO8601Timestamp
                     };
-                     AppleHealthKit.getDailyStepCountSamples(options, (err, results) => {
-                        console.log(results)
+                     AppleHealthKit.getDailyStepCountSamples(options, (err, res) => {
+                        console.log(res)
+                        if(res.length) {
+                            let _steps = res[res.length - 1].steps[0].value ;
+                            this.setState({steps: _steps })
+                        }
                     });
                 }
               })
