@@ -43,8 +43,8 @@ componentDidMount() {
         } catch (err) {
           console.warn(err);
         }
-      }
-      if (Platform.OS === 'android') {
+    }
+    if (Platform.OS === 'android') {
         requestCameraPermission()
         .then(success => {
             // The list of available scopes inside of src/scopes.js file
@@ -60,7 +60,7 @@ componentDidMount() {
                     console.log("AUTH_SUCCESS");
                     GoogleFit.observeSteps((callback) => {
                         console.log("start steps",callback);
-                     })
+                    })
                     // ...
                     // Call when authorized
                     GoogleFit.startRecording((callback) => {
@@ -109,73 +109,84 @@ componentDidMount() {
             console.log("location error " + err)
         })
     }
-    else {
+        else {
+            let options = {
+                permissions: {
+                read: ["Height", "Weight", "StepCount", "DateOfBirth", "BodyMassIndex"],
+                write: ["Weight", "StepCount", "BodyMassIndex"]
+                }
+            };
+            
+            
+
+            this.authorize(options);
+
+            
+        }
+    }
+    authorize(options) {
+        return new Promise((resolve, reject) => {
+            AppleHealthKit.initHealthKit(options, (err, results) => {
+            if (err) {
+              reject(err);
+            } else {
+              resolve(results)
+              console.log(results)
+              AppleHealthKit.setObserver({ type: 'Walking' });
+                NativeAppEventEmitter.addListener(
+                    'observer',
+                    (callback) => console.log("start",callback)
+                );
+
+                const date = new Date();
+                let yesterday = new Date(date.setDate(date.getDate() - 1)).toISOString();
+                
+                const options = {
+                    startDate: yesterday, // required ISO8601Timestamp
+                    endDate: new Date().toISOString() // required ISO8601Timestamp
+                };
+                 AppleHealthKit.getDailyStepCountSamples(options, (err, res) => {
+                    console.log(res)
+                    if(res.length) {
+                        let _steps = res[res.length - 1].steps[0].value ;
+                        this.setState({steps: _steps })
+                    }
+                });
+            }
+          })
+        })
+    }
+    updateSteps = () => {
+        if (Platform.OS === 'android') {
+            const date = new Date();
+            let yesterday = new Date(date.setDate(date.getDate() - 1)).toISOString();
+            
+            const options = {
+                startDate: yesterday, // required ISO8601Timestamp
+                endDate: new Date().toISOString() // required ISO8601Timestamp
+            };
+            
+            GoogleFit.getDailyStepCountSamples(options)
+            .then((res) => {
+                console.log('Daily steps >>> ', res[2].steps[1].value)
+                let _steps = res[res.length - 1].steps[0].value;
+
+                this.setState({steps: _steps })
+            })
+            .catch((err) => {console.warn(err)})
+       }
+       else {
         let options = {
             permissions: {
               read: ["Height", "Weight", "StepCount", "DateOfBirth", "BodyMassIndex"],
               write: ["Weight", "StepCount", "BodyMassIndex"]
             }
           };
-        
-        
-          function authorize(options) {
-            return new Promise((resolve, reject) => {
-                AppleHealthKit.initHealthKit(options, (err, results) => {
-                if (err) {
-                  reject(err);
-                } else {
-                  resolve(results)
-                  console.log(results)
-                  AppleHealthKit.setObserver({ type: 'Walking' });
-                    NativeAppEventEmitter.addListener(
-                        'observer',
-                        (callback) => console.log("start",callback)
-                    );
+         this.authorize(options);
 
-                    const date = new Date();
-                    let yesterday = new Date(date.setDate(date.getDate() - 1)).toISOString();
-                    
-                    const options = {
-                        startDate: yesterday, // required ISO8601Timestamp
-                        endDate: new Date().toISOString() // required ISO8601Timestamp
-                    };
-                     AppleHealthKit.getDailyStepCountSamples(options, (err, res) => {
-                        console.log(res)
-                        if(res.length) {
-                            let _steps = res[res.length - 1].steps[0].value ;
-                            this.setState({steps: _steps })
-                        }
-                    });
-                }
-              })
-            })
-          }
-          authorize(options);
-
-          
+       }
     }
 
-  
-
-    }
-     updateSteps = () => {
-        const date = new Date();
-        let yesterday = new Date(date.setDate(date.getDate() - 1)).toISOString();
-        
-        const options = {
-            startDate: yesterday, // required ISO8601Timestamp
-            endDate: new Date().toISOString() // required ISO8601Timestamp
-        };
-        
-        GoogleFit.getDailyStepCountSamples(options)
-        .then((res) => {
-            console.log('Daily steps >>> ', res[2].steps[1].value)
-            let _steps = res[2].steps[1].value;
-
-            this.setState({steps: _steps })
-        })
-        .catch((err) => {console.warn(err)})
-      }
     numberToPersian(value){
 
         if(typeof value != "undefined"){
