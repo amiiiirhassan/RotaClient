@@ -146,9 +146,8 @@ componentDidMount() {
                     endDate: new Date().toISOString() // required ISO8601Timestamp
                 };
                  AppleHealthKit.getDailyStepCountSamples(options, (err, res) => {
-                    console.log(res)
                     if(res.length) {
-                        let _steps = res[res.length - 1].steps[0].value ;
+                        let _steps = res[res.length - 1].value ;
                         this.setState({steps: _steps })
                     }
                 });

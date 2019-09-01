@@ -64,7 +64,7 @@ class Signin extends React.Component {
       .catch((err) => {
           this.setState({ disableBtn: false });
           console.log(err)
-          this.refs.toast.show(err, 2000);
+        //  this.refs.toast.show(err, 2000);
           return err
       })
       
@@ -92,9 +92,12 @@ class Signin extends React.Component {
                       <Text style={[signin.loginHeaderText, signin.fontCustom]}>
                           برای ورود شماره خود را وارد کنید
                       </Text>
+                      {/*
                       <Toast ref="toast" style={{ zIndex: 1000 }} positionValue={370} position='top' opacity={0.8}
                           textStyle={{ fontSize: 18, fontFamily: 'IRANSansMobile', color: '#fff' }}
                       />
+                      */
+                      }
                       <View style={signin.loginHeaderSeprator}>
 
                       </View>
