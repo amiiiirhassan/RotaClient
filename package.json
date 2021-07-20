@@ -9,7 +9,7 @@
   "dependencies": {
     "jalaali-js": "^1.1.0",
     "react": "16.8.3",
-    "react-native": "0.59.9",
+    "react-native": "0.62.3",
     "react-native-circular-progress": "1.1.0",
     "react-native-easy-toast": "1.2.0",
     "react-native-elements": "1.1.0",
